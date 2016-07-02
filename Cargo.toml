@@ -1,0 +1,6 @@
+[package]
+name = "rust-pascal"
+version = "0.1.0"
+authors = ["Cyrus Hilliard <monkfische@gmail.com>"]
+
+[dependencies]
