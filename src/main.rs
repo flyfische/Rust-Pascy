@@ -11,7 +11,7 @@ enum TokenType {
 }
 
 struct Token {
-    value: String,
+    value: Option<String>,
     t_type: TokenType,
 }
 
@@ -33,7 +33,7 @@ impl<'a> Lexer<'a> {
         }
     }
     
-    fn integer(&mut self) -> i32 {
+    fn integer(&mut self) -> String {
         let mut digit = String::new();
         loop {
             let cur_digit = self.text.nth(self.pos);
@@ -44,16 +44,15 @@ impl<'a> Lexer<'a> {
                         digit.push(x)
                     }
                     else {
-                        // return parsed digit
                         break;
                     }
                 },
                 None => {
-                    // return parsed digit
+                    break;
                 },
             }
         }
-        return 0;
+        return digit;
     }
 
     fn advance(&mut self) {
@@ -81,6 +80,56 @@ impl<'a> Lexer<'a> {
                 },
             }
         }
+    }
+
+    fn get_next_token(&mut self) -> Token {
+        loop {
+            let mut current_char: char;
+            match self.current_char {
+                Some(ref tok) => {
+                   current_char = *tok;
+                },
+                None => {
+                    break;
+                }
+            }
+            
+            if current_char.is_whitespace() {
+                self.skip_whitespace();
+                continue;
+            }
+
+            if current_char.is_numeric() {
+                let tok = self.integer();
+                return Token {
+                    t_type: TokenType::INTEGER,
+                    value: Some(tok),
+                };
+            }
+
+            match current_char {
+                '+' => {
+                    self.advance();
+                    return Token {
+                        t_type: TokenType::ADD,
+                        value: Some(current_char.to_string()),
+                    };
+                },
+                '-' => {
+                    return Token {
+                        t_type: TokenType::SUBTRACT,
+                        value: Some(current_char.to_string()),
+                    };
+                },
+                _ => {
+                    panic!("Invalid character found!");
+                },
+            }
+        }
+        return Token {
+            t_type: TokenType::EOF,
+            value: None
+        };
     }
 }
 
