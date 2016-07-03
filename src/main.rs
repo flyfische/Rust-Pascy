@@ -17,6 +17,11 @@ struct Token {
     t_type: TokenType,
 }
 
+struct Interpreter<'a> {
+    lexer: Lexer<'a>,
+    current_token: Option<Token>,
+}
+
 struct Lexer<'a> {
     text: Chars<'a>,
     len: usize,
@@ -166,6 +171,10 @@ impl<'a> Lexer<'a> {
     }
 }
 
+impl<'a> Interpreter<'a> {
+
+}
+
 fn main() {
     let mut input = String::new();
 
@@ -176,11 +185,20 @@ fn main() {
     match io::stdin().read_line(&mut input) {
         Ok(_) => {
             let mut lexer = Lexer::new(&mut input);
-            println!("Next char: {:#?}", lexer.get_next_token());
-            println!("Next char: {:#?}", lexer.get_next_token());
-            println!("Next char: {:#?}", lexer.get_next_token());
-            println!("Next char: {:#?}", lexer.get_next_token());
-        }
-        Err(error) => println!("Error: {}", error)
+            loop {
+                let tok = lexer.get_next_token();
+                println!("{:#?}", tok);
+                match tok.t_type {
+                    TokenType::EOF => {
+                        println!("EOF found.  Stopping");
+                        break;
+                    },
+                    _ => {
+                        continue;
+                    },
+                }
+            }
+        },
+        Err(error) => println!("Error: {}", error),
     }
 }
