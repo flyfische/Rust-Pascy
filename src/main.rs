@@ -51,9 +51,9 @@ impl<'a> Lexer<'a> {
             let cur_digit = self.current_char;
             match cur_digit {
                 Some(x) => {
-                    println!("Checking {} for digit", x);
+                    //println!("Checking {} for digit", x);
                     if x.is_digit(10) {
-                        println!("Found digit!");
+                        //println!("Found digit!");
                         digit.push(x)
                     }
                     else {
@@ -66,14 +66,14 @@ impl<'a> Lexer<'a> {
             }
             self.advance();
         }
-        println!("Returning digit..");
+        //println!("Returning digit..");
         return digit;
     }
 
     fn advance(&mut self) {
         let pos = self.pos;
         let len = self.len;
-        println!("Len is {}, pos is {}", len, pos);
+        //println!("Len is {}, pos is {}", len, pos);
         self.pos += 1;
         if pos > (len - 2) {
             self.current_char = None;
@@ -82,10 +82,10 @@ impl<'a> Lexer<'a> {
             match self.text.next() {
                 Some(x) => {
                     self.current_char = Some(x);
-                    println!("Successfully unwrapped next_char: {}", x);
+                    //println!("Successfully unwrapped next_char: {}", x);
                 },
                 None => {
-                    println!("error unwrapping next_char");
+                    //println!("error unwrapping next_char");
                     self.current_char = None;
                 },
             }
@@ -94,11 +94,11 @@ impl<'a> Lexer<'a> {
 
     fn skip_whitespace(&mut self) {
         loop {
-            println!("Checking whitespace...");
+            //println!("Checking whitespace...");
             match self.current_char {
                 Some(x) => {
                     if x.is_whitespace() {
-                        println!("Skipping whitespace!");
+                        //println!("Skipping whitespace!");
                         self.advance();
                         continue;
                     }
@@ -111,7 +111,7 @@ impl<'a> Lexer<'a> {
                 },
             }
         }
-        println!("Exiting skip_whitespace");
+        //println!("Exiting skip_whitespace");
     }
 
     fn get_next_token(&mut self) -> Token {
@@ -120,16 +120,16 @@ impl<'a> Lexer<'a> {
 
             match self.current_char {
                 Some(ref tok) => {
-                   current_char = *tok;
+                    current_char = *tok;
                 },
                 None => {
                     break;
                 }
             }
-            println!("Current char (in get_next_token): {:#?}", current_char);
+            //println!("Current char (in get_next_token): {:#?}", current_char);
             
             if current_char.is_whitespace() {
-                println!("In get_next_token, found a whitespace");
+                //println!("In get_next_token, found a whitespace");
                 self.skip_whitespace();
                 continue;
             }
@@ -145,7 +145,7 @@ impl<'a> Lexer<'a> {
 
             match current_char {
                 '+' => {
-                    println!("Found +");
+                    //println!("Found +");
                     self.advance();
                     return Token {
                         t_type: TokenType::ADD,
@@ -156,6 +156,13 @@ impl<'a> Lexer<'a> {
                     self.advance();
                     return Token {
                         t_type: TokenType::SUBTRACT,
+                        value: Some(current_char.to_string()),
+                    };
+                },
+                '*' => {
+                    self.advance();
+                    return Token {
+                        t_type: TokenType::MULT,
                         value: Some(current_char.to_string()),
                     };
                 },
@@ -177,28 +184,27 @@ impl<'a> Interpreter<'a> {
 
 fn main() {
     let mut input = String::new();
-
-    print!("calc> ");
-    
-    io::stdout().flush().unwrap();
-
-    match io::stdin().read_line(&mut input) {
-        Ok(_) => {
-            let mut lexer = Lexer::new(&mut input);
-            loop {
-                let tok = lexer.get_next_token();
-                println!("{:#?}", tok);
-                match tok.t_type {
-                    TokenType::EOF => {
-                        println!("EOF found.  Stopping");
-                        break;
-                    },
-                    _ => {
-                        continue;
-                    },
+    loop {
+        print!("calc> ");
+        io::stdout().flush().unwrap();
+        match io::stdin().read_line(&mut input) {
+            Ok(_) => {
+                let mut lexer = Lexer::new(&mut input);
+                loop {
+                    let tok = lexer.get_next_token();
+                    println!("{:#?}", tok);
+                    match tok.t_type {
+                        TokenType::EOF => {
+                            println!("EOF found.  Stopping");
+                            break;
+                        },
+                        _ => {
+                            continue;
+                        },
+                    }
                 }
-            }
-        },
-        Err(error) => println!("Error: {}", error),
+            },
+            Err(error) => println!("Error: {}", error),
+        }
     }
 }
