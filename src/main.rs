@@ -1,7 +1,8 @@
 use std::io::{self, Write};
 use std::str::Chars;
+use std::cmp::PartialEq;
 
-#[derive(Debug)]
+#[derive(Debug,PartialEq)]
 enum TokenType {
     INTEGER,
     ADD,
@@ -19,7 +20,7 @@ struct Token {
 
 struct Interpreter<'a> {
     lexer: Lexer<'a>,
-    current_token: Option<Token>,
+    current_token: Option<Token>
 }
 
 struct Lexer<'a> {
@@ -180,6 +181,49 @@ impl<'a> Lexer<'a> {
 
 impl<'a> Interpreter<'a> {
 
+    fn new(mut lex: Lexer<'a>) -> Interpreter<'a> {
+        let mut token = lex.get_next_token();
+        Interpreter {
+            lexer: lex,
+            current_token: Some(token),
+        }
+    }
+
+    fn eat(&mut self, token: TokenType) {
+        let mut tok: Token;
+        match self.current_token {
+            Some(ref x) => {
+                if x.t_type == token {
+                    println!("Valid token");
+                }
+                else {
+                    println!("Invalid token: Wanted {:#?} got {:#?}", token, x.t_type);
+                }
+            },
+            None => {
+                panic!("No current token");
+            },
+        }
+        let mut next = self.lexer.get_next_token();
+        self.current_token = Some(next);
+    }
+    fn eval(&mut self) {
+        let mut result: i32;
+        
+        match self.current_token {
+            Some(ref x) => {
+                match x.value {
+                    Some(ref y) => {
+                        result = y.parse::<i32>().unwrap();
+                    },
+                    None => {},
+                }
+            },
+            None => {
+            }
+        }
+    }
+
 }
 
 fn main() {
@@ -190,19 +234,10 @@ fn main() {
         match io::stdin().read_line(&mut input) {
             Ok(_) => {
                 let mut lexer = Lexer::new(&mut input);
-                loop {
-                    let tok = lexer.get_next_token();
-                    println!("{:#?}", tok);
-                    match tok.t_type {
-                        TokenType::EOF => {
-                            println!("EOF found.  Stopping");
-                            break;
-                        },
-                        _ => {
-                            continue;
-                        },
-                    }
-                }
+                let mut interpreter = Interpreter::new(lexer);    
+                interpreter.eat(TokenType::INTEGER);
+                interpreter.eat(TokenType::ADD);
+                interpreter.eat(TokenType::INTEGER);
             },
             Err(error) => println!("Error: {}", error),
         }
